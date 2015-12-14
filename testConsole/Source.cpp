@@ -1,7 +1,8 @@
 #include <vector>
 #include <iostream>
 #include "../winsock/winsock.h"
-#pragma comment(lib, "../x64/Release/winsock.lib")
+//#pragma comment(lib, "../x64/Release/winsock.lib")
+#pragma comment(lib, "../x64/Debug/winsock.lib")
 
 void server()
 {
@@ -15,12 +16,13 @@ void server()
 
 	printf("Port: ");
 	std::getline(std::cin, in);
-	std::stoi(in);
+	port = std::stoi(in);
 
 	try
 	{
 		server = winsock::Server(port);
 		server.Start();
+		printf("Started\n");
 	}
 	catch (winsock::socket_error e)
 	{
@@ -69,12 +71,13 @@ void client()
 
 	printf("Port: ");
 	std::getline(std::cin, in);
-	std::stoi(in);
+	port = std::stoi(in);
 
 	try
 	{
 		client = winsock::Client(ip, port);
 		client.Connect();
+		printf("Connected\n");
 	}
 	catch (winsock::socket_error e)
 	{

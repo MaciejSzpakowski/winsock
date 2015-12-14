@@ -65,13 +65,18 @@ namespace winsock
 		void SetName(string name);
 		string GetName();
 		bool IsRunning();
+
+		//rule of five
+
+		Server& operator=(Server&& other);
+
+		Server(Server&& other);
 	};
 
 	class Client
 	{
 	private:
 		IntClient* client;
-		int mode; // this should save me from implementing all move and copy stuff
 	public:
 		//default constructor
 		Client();
@@ -112,5 +117,15 @@ namespace winsock
 		void SetName(string name);
 		string GetName();
 		bool IsConnected();
+
+		//rule of five
+
+		Client& operator=(Client&& other);
+
+		Client& operator=(const Client& other); // copy assignment
+
+		Client(Client&& other);
+
+		Client(const Client& other);
 	};
 }

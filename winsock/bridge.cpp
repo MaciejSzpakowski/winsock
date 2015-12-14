@@ -88,22 +88,31 @@ namespace winsock
 		}
 	}
 
+	Server& Server::operator=(Server&& other)
+	{
+		server = other.server;
+		other.server = nullptr;
+		return *this;
+	}
+
+	Server::Server(Server&& other)
+	{
+		server = other.server;
+	}
+
 	///////Client/////////////
 	Client::Client()
 	{
-		mode = 2;
 		client = nullptr;
 	}
 
 	Client::Client(string host, unsigned short port)
 	{
-		mode = 1;
 		client = new IntClient(host, port);
 	}
 
 	Client::Client(IntClient* c)
 	{
-		mode = 2;
 		client = c;
 	}
 
@@ -164,11 +173,34 @@ namespace winsock
 
 	Client::~Client()
 	{
-		if (mode == 1)
+		if (client != nullptr)
 		{
 			client->Destroy();
 			delete client;
 			client = nullptr;
 		}
+	}
+
+	Client& Client::operator=(Client&& other) // move assignment
+	{
+		client = other.client;
+		other.client = nullptr;
+		return *this;
+	}
+
+	Client& Client::operator=(const Client& other) // copy assignment
+	{
+		client = other.client;
+		return *this;
+	}
+
+	Client::Client(Client&& other)
+	{
+		client = other.client;
+	}
+
+	Client::Client(const Client& other)
+	{
+		client = other.client;
 	}
 }
