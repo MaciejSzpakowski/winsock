@@ -5,15 +5,12 @@ namespace winsock
 	bool libraryLoaded = false;
 	WSAData wsadata;
 
-	string GetLastWinsockErrorMessage(PDWORD errorCode)
-	{
-		DWORD err = WSAGetLastError();
-		if(errorCode != 0)
-			*errorCode = err;
+	string GetLastWinsockErrorMessage(DWORD errorCode)
+	{		
 		char str[300];
 		SecureZeroMemory(str, 300);
 		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, 0,
-			err, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
+			errorCode, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
 			str, 300, 0);
 		return string(str);
 	}
@@ -52,11 +49,14 @@ namespace winsock
 
 	string FormatErrorString(const char* header)
 	{
-		DWORD code;
+		DWORD err = WSAGetLastError();
 		stringstream ss;
+		string msg = GetLastWinsockErrorMessage(err);
+
 		ss << header << std::endl
-			<< "Error code " << code << std::endl
-			<< GetLastWinsockErrorMessage(&code);
+			<< "Error code " << err << std::endl
+			<< msg;
+
 		return ss.str();
 	}
 }

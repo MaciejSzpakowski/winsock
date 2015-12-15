@@ -106,8 +106,7 @@ namespace winsock
 			if (receiveBuffer.size() > size)
 			{
 				result = true;
-				for (int i = 1; i < size + 1; i++)
-					vec.insert(vec.end(), receiveBuffer.begin() + 1, receiveBuffer.begin() + 1 + size);
+				vec.insert(vec.end(), receiveBuffer.begin() + 1, receiveBuffer.begin() + 1 + size);
 
 				receiveBuffer.erase(receiveBuffer.begin(), receiveBuffer.begin() + 1 + size);
 			}
@@ -127,7 +126,7 @@ namespace winsock
 
 		smsg.reserve(len + 1);
 
-		smsg[0] = len;
+		smsg.push_back(len);
 		smsg.insert(smsg.begin() + 1, msg, msg + len);
 		//send function isnt guaranteed to send everything
 		//compare return value with msg len and resend if necessary

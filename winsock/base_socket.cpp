@@ -19,7 +19,10 @@ namespace winsock
 
 		errorMutex.lock();
 		if (!errors.empty())
+		{
 			err = errors.front();
+			errors.pop();
+		}
 		errorMutex.unlock();
 
 		if (err != "")

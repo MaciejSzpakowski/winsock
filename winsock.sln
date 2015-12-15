@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "winsock", "winsock\winsock.vcxproj", "{1CED050A-0FF2-4734-8E30-39DB7E9716CE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testConsole", "testConsole\testConsole.vcxproj", "{1F1682B8-E33E-4C36-A44D-B8D5CDB0F0F8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1CED050A-0FF2-4734-8E30-39DB7E9716CE} = {1CED050A-0FF2-4734-8E30-39DB7E9716CE}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,5 +1,7 @@
 #include <vector>
 #include <iostream>
+#include <thread>
+#include <chrono>
 #include "../winsock/winsock.h"
 //#pragma comment(lib, "../x64/Release/winsock.lib")
 #pragma comment(lib, "../x64/Debug/winsock.lib")
@@ -32,27 +34,40 @@ void server()
 
 	while (true)
 	{
-		if (server.GetNextClient(newClient))
+		std::this_thread::sleep_for(std::chrono::microseconds(10));
+
+		try
 		{
-			clients.push_back(newClient);
-			printf("New client: %s\n", newClient.GetIP().c_str());
-		}
-		
-		for (auto& c : clients)
-		{
-			if (c.GetNextMessage(msg))
+			server.GetNextError();
+
+			if (server.GetNextClient(newClient))
 			{
-				text = std::string(msg.begin(), msg.end());
-				printf("%s: %s\n", c.GetIP().c_str(), text.c_str());
-
-				for (auto& other : clients) // resend
-				{
-					if (other.GetId() != c.GetId())
-						other.Send(msg.data(), msg.size());
-				}
-
-				msg.clear();
+				clients.push_back(newClient);
+				printf("New client: %s\n", newClient.GetIP().c_str());
 			}
+
+			for (auto& c : clients)
+			{
+				c.GetNextError();
+
+				if (c.GetNextMessage(msg))
+				{
+					text = std::string(msg.begin(), msg.end());
+					printf("%s: %s\n", c.GetIP().c_str(), text.c_str());
+
+					for (auto& other : clients) // resend
+					{
+						if (other.GetId() != c.GetId())
+							other.Send(msg.data(), msg.size());
+					}
+
+					msg.clear();
+				}
+			}
+		}
+		catch (winsock::socket_error e)
+		{
+			printf("%s\n", e.what());
 		}
 	}
 }

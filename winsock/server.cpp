@@ -51,6 +51,7 @@ namespace winsock
 		sockaddr* paddress = (sockaddr*)&address;
 		if (bind((SOCKET)handle, paddress, (int)sizeof(sockaddr)) == SOCKET_ERROR)
 		{
+			//auto err = GetLastError();
 			string msg = FormatErrorString("bind() in IntServer::IntServer()");
 			throw socket_error(msg);
 		}
@@ -88,7 +89,10 @@ namespace winsock
 
 		clientMutex.lock();
 		if (!clients.empty())
+		{
 			socket = clients.front();
+			clients.pop();
+		}
 		clientMutex.unlock();
 
 		if (socket == 0)

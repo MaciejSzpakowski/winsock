@@ -38,7 +38,7 @@ namespace winsock
 			return false;
 		else
 		{
-			c = Client(server->GetNextClient());
+			c = Client(ic);
 			return true;
 		}
 	}
