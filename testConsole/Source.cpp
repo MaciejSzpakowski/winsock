@@ -34,11 +34,11 @@ void server()
 
 	while (true)
 	{
-		std::this_thread::sleep_for(std::chrono::microseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
 		try
 		{
-			server.GetNextError();
+			server.ThrowNextError();
 
 			if (server.GetNextClient(newClient))
 			{
@@ -48,7 +48,7 @@ void server()
 
 			for (auto& c : clients)
 			{
-				c.GetNextError();
+				c.ThrowNextError();
 
 				if (c.GetNextMessage(msg))
 				{
@@ -64,6 +64,13 @@ void server()
 					msg.clear();
 				}
 			}
+
+			for (int i = (int)clients.size() - 1; i >= 0;i--)
+				if (!clients[i].IsConnected())
+				{
+					printf("%s disconnected\n", clients[i].GetIP().c_str());
+					clients.erase(clients.begin() + i);
+				}
 		}
 		catch (winsock::socket_error e)
 		{
@@ -102,6 +109,8 @@ void client()
 
 	while (true)
 	{
+		client.ThrowNextError();
+
 		printf("1: read next msg, 2: write message\n");
 		std::getline(std::cin, in);
 

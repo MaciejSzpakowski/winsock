@@ -6,7 +6,7 @@ namespace winsock
 	{
 		int size = sizeof(sockaddr_in);
 		sockaddr_in address;
-		string msg;
+		socket_error err;
 		SOCKET socket;
 
 		while (true)
@@ -16,8 +16,8 @@ namespace winsock
 			if (socket == INVALID_SOCKET)
 			{
 				server->Stop();
-				msg = FormatErrorString("accept() in AcceptThread()");
-				server->SetNextError(msg);
+				err = FormatError("accept() in AcceptThread()");
+				server->SetNextError(err);
 				break;
 			}
 
@@ -38,8 +38,7 @@ namespace winsock
 		handle = socket(AF_INET, SOCK_STREAM, NULL);
 		if (handle == INVALID_SOCKET)
 		{
-			string msg = FormatErrorString("socket() in IntServer::IntServer()");
-			throw socket_error(msg);
+			throw FormatError("socket() in IntServer::IntServer()");
 		}
 
 		id = (long long)handle;
@@ -51,18 +50,19 @@ namespace winsock
 		sockaddr* paddress = (sockaddr*)&address;
 		if (bind((SOCKET)handle, paddress, (int)sizeof(sockaddr)) == SOCKET_ERROR)
 		{
-			//auto err = GetLastError();
-			string msg = FormatErrorString("bind() in IntServer::IntServer()");
-			throw socket_error(msg);
+			throw FormatError("bind() in IntServer::IntServer()");
 		}
+
+		char buf[100];
+		inet_ntop(AF_INET, &(address.sin_addr), buf, 100);
+		ip = string(ip);
 	}
 
 	void IntServer::Start(int maxQueue)
 	{
 		if (listen(handle, maxQueue) == SOCKET_ERROR)
 		{
-			string msg = FormatErrorString("listen() in IntServer::Start()");
-			throw socket_error(msg);
+			throw FormatError("listen() in IntServer::Start()");
 		}
 
 		running = true;
@@ -78,8 +78,7 @@ namespace winsock
 		running = false;
 		if (closesocket(handle) == SOCKET_ERROR)
 		{
-			string msg = FormatErrorString("closesocket() in IntServer::Stop()");
-			throw socket_error(msg);
+			throw FormatError("closesocket() in IntServer::Stop()");
 		}
 	}	
 
@@ -107,5 +106,6 @@ namespace winsock
 
 	void IntServer::Destroy()
 	{
+		Stop();
 	}
 }

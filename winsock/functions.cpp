@@ -24,8 +24,7 @@ namespace winsock
 		if (res != 0)
 		{
 			SetLastError(res);
-			string msg = FormatErrorString("LoadWinsock()");
-			throw socket_error(msg);
+			throw FormatError("LoadWinsock()");
 		}
 
 		libraryLoaded = true;
@@ -40,14 +39,13 @@ namespace winsock
 		if (res != 0)
 		{
 			SetLastError(res);
-			string msg = FormatErrorString("UnloadWinsock()");
-			throw socket_error(msg);
+			throw FormatError("UnloadWinsock()");
 		}
 
 		libraryLoaded = false;
 	}
 
-	string FormatErrorString(const char* header)
+	socket_error FormatError(const char* header)
 	{
 		DWORD err = WSAGetLastError();
 		stringstream ss;
@@ -57,6 +55,6 @@ namespace winsock
 			<< "Error code " << err << std::endl
 			<< msg;
 
-		return ss.str();
+		return socket_error(ss.str(), err);
 	}
 }

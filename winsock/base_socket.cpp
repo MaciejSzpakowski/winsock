@@ -6,16 +6,9 @@ namespace winsock
 	{
 	}
 
-	string BaseSocket::GetIP()
+	void BaseSocket::ThrowNextError()
 	{
-		char ip[100];
-		inet_ntop(AF_INET, &(address.sin_addr), ip, 100);
-		return string(ip);
-	}
-
-	void BaseSocket::GetNextError()
-	{
-		string err = "";
+		socket_error err;
 
 		errorMutex.lock();
 		if (!errors.empty())
@@ -25,11 +18,11 @@ namespace winsock
 		}
 		errorMutex.unlock();
 
-		if (err != "")
-			throw socket_error(err);
+		if (err.errorCode != -1)
+			throw err;
 	}
 
-	void BaseSocket::SetNextError(string& error)
+	void BaseSocket::SetNextError(socket_error& error)
 	{
 		errorMutex.lock();
 		errors.push(error);

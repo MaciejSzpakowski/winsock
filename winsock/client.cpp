@@ -5,7 +5,7 @@ namespace winsock
 	void ReceiveThread(IntClient* client)
 	{
 		byte tempBuffer[100];
-		string msg;
+		socket_error err;
 
 		while (client->connected)
 		{
@@ -13,9 +13,9 @@ namespace winsock
 
 			if (len == SOCKET_ERROR)
 			{
-				client->Disconnect();
-				msg = FormatErrorString("accept() in AcceptThread()");
-				client->SetNextError(msg);
+				err = FormatError("accept() in AcceptThread()");
+				client->Disconnect();				
+				client->SetNextError(err);
 				break;
 			}
 			else if (len == 0)
@@ -42,8 +42,7 @@ namespace winsock
 		handle = socket(AF_INET, SOCK_STREAM, NULL);
 		if (handle == INVALID_SOCKET)
 		{
-			string msg = FormatErrorString("socket() in Client::IntClient()");
-			throw socket_error(msg);
+			throw FormatError("socket() in Client::IntClient()");
 		}
 		id = (long long)handle;
 		SecureZeroMemory(&address, sizeof(address));
@@ -52,6 +51,10 @@ namespace winsock
 		inet_pton(AF_INET, ip.c_str(), &(address.sin_addr));
 		//port
 		address.sin_port = htons(port);
+
+		char buf[100];
+		inet_ntop(AF_INET, &(address.sin_addr), buf, 100);
+		ip = string(ip);
 	}
 
 	IntClient::IntClient(SOCKET socket, sockaddr_in _address, IntServer* _server)
@@ -64,14 +67,17 @@ namespace winsock
 		receiveThread.detach();
 		id = (long long)handle;
 		name = "";
+
+		char buf[100];
+		inet_ntop(AF_INET, &(address.sin_addr), buf, 100);
+		ip = string(ip);
 	}
 
 	void IntClient::Connect()
 	{
 		if(connect(handle, (sockaddr*)&(address), sizeof(sockaddr_in)) == SOCKET_ERROR)
 		{
-			string msg = FormatErrorString("connect() in Client::Connect()");
-			throw socket_error(msg);
+			throw FormatError("connect() in Client::Connect()");
 		}
 
 		connected = true;
@@ -87,8 +93,7 @@ namespace winsock
 		connected = false;
 		if (closesocket(handle) == SOCKET_ERROR)
 		{
-			string msg = FormatErrorString("closesocket() in Client::Disconnect()");
-			throw socket_error(msg);
+			throw FormatError("closesocket() in Client::Disconnect()");
 		}
 
 		handle = INVALID_SOCKET;
@@ -136,8 +141,7 @@ namespace winsock
 
 			if (sent == SOCKET_ERROR)
 			{
-				string msg = FormatErrorString("send() in Server::Send()");
-				throw socket_error(msg);
+				throw FormatError("send() in Server::Send()");
 			}
 
 			index += sent;
@@ -146,5 +150,6 @@ namespace winsock
 
 	void IntClient::Destroy()
 	{
+		Disconnect();
 	}
 }

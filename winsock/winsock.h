@@ -25,8 +25,10 @@ namespace winsock
 	class socket_error : public std::runtime_error
 	{
 	public:
-		socket_error(const std::string& msg) : runtime_error(msg) {}
-		socket_error(const char* msg) : runtime_error(msg) {}
+		int errorCode;
+		socket_error() : runtime_error("Nothing"), errorCode(-1) {}
+		socket_error(const std::string& msg, int err) : runtime_error(msg), errorCode(err) {}
+		socket_error(const char* msg, int err) : runtime_error(msg), errorCode(err) {}
 	};
 
 	class Server
@@ -52,7 +54,7 @@ namespace winsock
 
 		bool GetNextClient(Client& client);
 
-		void GetNextError();
+		void ThrowNextError();
 
 		~Server();
 
@@ -104,7 +106,7 @@ namespace winsock
 		//len: length in bytes
 		void Send(byte* msg, byte len);
 
-		void GetNextError();
+		void ThrowNextError();
 
 		~Client();
 

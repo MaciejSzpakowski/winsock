@@ -43,9 +43,9 @@ namespace winsock
 		}
 	}
 
-	void Server::GetNextError()
+	void Server::ThrowNextError()
 	{
-		server->GetNextError();
+		server->ThrowNextError();
 	}
 
 	string Server::GetName()
@@ -70,7 +70,7 @@ namespace winsock
 
 	string Server::GetIP()
 	{
-		return server->GetIP();
+		return server->ip;
 	}
 
 	bool Server::IsRunning()
@@ -136,9 +136,9 @@ namespace winsock
 		client->Send(msg, len);
 	}
 
-	void Client::GetNextError()
+	void Client::ThrowNextError()
 	{
-		client->GetNextError();
+		client->ThrowNextError();
 	}
 
 	string Client::GetName()
@@ -163,7 +163,7 @@ namespace winsock
 
 	string Client::GetIP()
 	{
-		return client->GetIP();
+		return client->ip;
 	}
 
 	bool Client::IsConnected()

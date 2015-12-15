@@ -23,24 +23,23 @@ namespace winsock
 	using std::stringstream;
 
 	string GetLastWinsockErrorMessage(PDWORD errorCode);
-	string FormatErrorString(const char* header);
+	socket_error FormatError(const char* header);
 
 	struct BaseSocket
 	{
 		long long id;
 		string name;
+		string ip;
 		sockaddr_in address;
 		SOCKET handle;
 		mutex errorMutex;
-		std::queue<string> errors; // queue that grabs errors from other threads
+		std::queue<socket_error> errors; // queue that grabs errors from other threads
 
 		BaseSocket();
 
-		string GetIP();
+		void ThrowNextError();
 
-		void GetNextError();
-
-		void SetNextError(string& error);
+		void BaseSocket::SetNextError(socket_error& error);
 	};
 
 	struct IntClient : public BaseSocket
