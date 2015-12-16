@@ -8,6 +8,8 @@
 #include <vector>
 #include <mutex>
 #include <thread>
+#include <chrono>
+#include <future>
 #include <stdexcept>
 #include <queue>
 #include "winsock.h"
@@ -57,7 +59,7 @@ namespace winsock
 		IntClient(SOCKET socket, sockaddr_in _address, IntServer* _server);
 
 		//connect to server
-		void Connect();
+		void IntClient::Connect(size_t timeout);
 
 		//disconnect from server
 		void Disconnect();

@@ -12,7 +12,7 @@ namespace winsock
 
 	Server::Server(unsigned short port)
 	{
-		server = new IntServer(port);
+		server = std::shared_ptr<IntServer>(new IntServer(port));
 	}
 
 	void Server::Start(int maxQueue)
@@ -78,28 +78,6 @@ namespace winsock
 		return server->running;
 	}
 
-	Server::~Server()
-	{
-		if (server != nullptr)
-		{
-			server->Destroy();
-			delete server;
-			server = nullptr;
-		}
-	}
-
-	Server& Server::operator=(Server&& other)
-	{
-		server = other.server;
-		other.server = nullptr;
-		return *this;
-	}
-
-	Server::Server(Server&& other)
-	{
-		server = other.server;
-	}
-
 	///////Client/////////////
 	Client::Client()
 	{
@@ -108,12 +86,12 @@ namespace winsock
 
 	Client::Client(string host, unsigned short port)
 	{
-		client = new IntClient(host, port);
+		client = std::shared_ptr<IntClient>(new IntClient(host, port));
 	}
 
 	Client::Client(IntClient* c)
 	{
-		client = c;
+		client = std::shared_ptr<IntClient>(c);
 	}
 
 	void Client::Connect()
@@ -169,38 +147,5 @@ namespace winsock
 	bool Client::IsConnected()
 	{
 		return client->connected;
-	}
-
-	Client::~Client()
-	{
-		if (client != nullptr)
-		{
-			client->Destroy();
-			delete client;
-			client = nullptr;
-		}
-	}
-
-	Client& Client::operator=(Client&& other) // move assignment
-	{
-		client = other.client;
-		other.client = nullptr;
-		return *this;
-	}
-
-	Client& Client::operator=(const Client& other) // copy assignment
-	{
-		client = other.client;
-		return *this;
-	}
-
-	Client::Client(Client&& other)
-	{
-		client = other.client;
-	}
-
-	Client::Client(const Client& other)
-	{
-		client = other.client;
 	}
 }

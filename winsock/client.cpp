@@ -70,15 +70,42 @@ namespace winsock
 
 		char buf[100];
 		inet_ntop(AF_INET, &(address.sin_addr), buf, 100);
-		ip = string(ip);
+		ip = string(buf);
 	}
 
-	void IntClient::Connect()
+	int ConnectThread(IntClient* client)
 	{
-		if(connect(handle, (sockaddr*)&(address), sizeof(sockaddr_in)) == SOCKET_ERROR)
+		byte buf[3] = { 0,0,0 };
+
+		if (connect(client->handle, (sockaddr*)&(client->address), sizeof(sockaddr_in)) == SOCKET_ERROR)
+		{
+			return WSAGetLastError();
+		}
+
+		// welcome protocol
+		recv(client->handle, (char*)buf, 1, 0);
+		recv(client->handle, (char*)buf+1, 1, 0);
+		recv(client->handle, (char*)buf+2, 1, 0);
+
+		if (buf[0] != 1 || buf[1] != 2 || buf[2] != 3)
+			return 10060; // error 10060 is timed out
+
+		return 0;
+	}
+
+	void IntClient::Connect(size_t timeout)
+	{
+		// error 10060 is timed out
+		/*if(connect(handle, (sockaddr*)&(address), sizeof(sockaddr_in)) == SOCKET_ERROR)
 		{
 			throw FormatError("connect() in Client::Connect()");
-		}
+		}*/
+		int err = 0;
+
+		auto future = std::async(std::launch::async, [] {
+			std::this_thread::sleep_for(std::chrono::seconds(3));
+			return 8;
+		});
 
 		connected = true;
 		receiveThread = thread(ReceiveThread, this);

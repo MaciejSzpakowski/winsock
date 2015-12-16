@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include <vector>
 #include <string>
+#include <memory>
 
 #pragma once
 namespace winsock
@@ -34,7 +35,7 @@ namespace winsock
 	class Server
 	{
 	private:
-		IntServer* server;
+		std::shared_ptr<IntServer> server;
 	public:
 
 		//default constructor
@@ -56,8 +57,6 @@ namespace winsock
 
 		void ThrowNextError();
 
-		~Server();
-
 		//getters and setters
 
 		string GetIP();
@@ -67,18 +66,12 @@ namespace winsock
 		void SetName(string name);
 		string GetName();
 		bool IsRunning();
-
-		//rule of five
-
-		Server& operator=(Server&& other);
-
-		Server(Server&& other);
 	};
 
 	class Client
 	{
 	private:
-		IntClient* client;
+		std::shared_ptr<IntClient> client;
 	public:
 		//default constructor
 		Client();
@@ -108,8 +101,6 @@ namespace winsock
 
 		void ThrowNextError();
 
-		~Client();
-
 		//getters and setters
 
 		string GetIP();
@@ -119,15 +110,5 @@ namespace winsock
 		void SetName(string name);
 		string GetName();
 		bool IsConnected();
-
-		//rule of five
-
-		Client& operator=(Client&& other);
-
-		Client& operator=(const Client& other); // copy assignment
-
-		Client(Client&& other);
-
-		Client(const Client& other);
 	};
 }

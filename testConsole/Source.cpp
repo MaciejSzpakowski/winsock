@@ -3,8 +3,11 @@
 #include <thread>
 #include <chrono>
 #include "../winsock/winsock.h"
-//#pragma comment(lib, "../x64/Release/winsock.lib")
+#ifdef _DEBUG
 #pragma comment(lib, "../x64/Debug/winsock.lib")
+#else
+#pragma comment(lib, "../x64/Release/winsock.lib")
+#endif
 
 void server()
 {
@@ -16,9 +19,13 @@ void server()
 	winsock::Server server;
 	std::string text;
 
-	printf("Port: ");
+	printf("Port:\n>>");
 	std::getline(std::cin, in);
-	port = std::stoi(in);
+
+	if (in == "")
+		port = 10000;
+	else
+		port = std::stoi(in);
 
 	try
 	{
@@ -39,42 +46,49 @@ void server()
 		try
 		{
 			server.ThrowNextError();
+		}
+		catch (winsock::socket_error err)
+		{
+			printf("%s\n", err.what());
+		}
 
-			if (server.GetNextClient(newClient))
+		if (server.GetNextClient(newClient))
+		{
+			clients.push_back(newClient);
+			printf("New client: %lld@%s\n", newClient.GetId(), newClient.GetIP().c_str());
+		}
+
+		for (int i = (int)clients.size() - 1; i >= 0; i--)
+			if (!clients[i].IsConnected())
 			{
-				clients.push_back(newClient);
-				printf("New client: %s\n", newClient.GetIP().c_str());
+				printf("%lld@%s disconnected\n",clients[i].GetId(), clients[i].GetIP().c_str());
+				clients.erase(clients.begin() + i);
 			}
 
-			for (auto& c : clients)
+		for (auto& c : clients)
+		{
+			c.ThrowNextError();
+
+			if (c.GetNextMessage(msg))
 			{
-				c.ThrowNextError();
+				text = std::string(msg.begin(), msg.end());
+				printf("%s: %s\n", c.GetIP().c_str(), text.c_str());
 
-				if (c.GetNextMessage(msg))
+				for (auto& other : clients) // resend
 				{
-					text = std::string(msg.begin(), msg.end());
-					printf("%s: %s\n", c.GetIP().c_str(), text.c_str());
-
-					for (auto& other : clients) // resend
+					try
 					{
 						if (other.GetId() != c.GetId())
 							other.Send(msg.data(), msg.size());
 					}
-
-					msg.clear();
+					catch (winsock::socket_error err)
+					{
+						printf("%s\n", err.what());
+					}
 				}
+
+				msg.clear();
 			}
-
-			for (int i = (int)clients.size() - 1; i >= 0;i--)
-				if (!clients[i].IsConnected())
-				{
-					printf("%s disconnected\n", clients[i].GetIP().c_str());
-					clients.erase(clients.begin() + i);
-				}
-		}
-		catch (winsock::socket_error e)
-		{
-			printf("%s\n", e.what());
 		}
 	}
 }
@@ -88,12 +102,17 @@ void client()
 	std::vector<unsigned char> msg;
 	std::string text;
 
-	printf("IP: ");
+	printf("IP:\n>>");
 	std::getline(std::cin, ip);
+	if (ip == "")
+		ip = "127.0.0.1";
 
-	printf("Port: ");
+	printf("Port:\n>>");	
 	std::getline(std::cin, in);
-	port = std::stoi(in);
+	if (in == "")
+		port = 10000;
+	else
+		port = std::stoi(in);
 
 	try
 	{
@@ -109,9 +128,22 @@ void client()
 
 	while (true)
 	{
-		client.ThrowNextError();
+		try
+		{
+			client.ThrowNextError();
+		}
+		catch (winsock::socket_error e)
+		{
+			printf("%s\n", e.what());
+		}
 
-		printf("1: read next msg, 2: write message\n");
+		if (!client.IsConnected())
+		{
+			printf("You are disconnected from the server\n");
+			return;
+		}
+
+		printf("1: read next msg, 2: write message\n>>");
 		std::getline(std::cin, in);
 
 		if (in == "1")
@@ -122,13 +154,25 @@ void client()
 				printf("%s: %s\n", client.GetIP().c_str(), text.c_str());
 				msg.clear();
 			}
+			else
+			{
+				printf("No new messages\n");
+			}
 		}
 
 		else if (in == "2")
 		{
 			printf("Message: ");
 			std::getline(std::cin, in);
-			client.Send((unsigned char*)in.c_str(), in.size());
+
+			try
+			{
+				client.Send((unsigned char*)in.c_str(), in.size());
+			}
+			catch (winsock::socket_error e)
+			{
+				printf("%s\n", e.what());
+			}
 		}
 	}
 }
