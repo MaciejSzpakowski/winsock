@@ -83,7 +83,7 @@ namespace winsock
 		Client(IntClient* c);
 
 		//connect to server
-		void Connect();
+		void Connect(size_t timeout);
 
 		//disconnect from server
 		void Disconnect();
