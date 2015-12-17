@@ -95,17 +95,26 @@ namespace winsock
 
 	void IntClient::Connect(size_t timeout)
 	{
-		// error 10060 is timed out
-		/*if(connect(handle, (sockaddr*)&(address), sizeof(sockaddr_in)) == SOCKET_ERROR)
-		{
-			throw FormatError("connect() in Client::Connect()");
-		}*/
-		int err = 0;
+		auto connectAsync = std::async(std::launch::async, ConnectThread, this);
 
-		auto future = std::async(std::launch::async, [] {
-			std::this_thread::sleep_for(std::chrono::seconds(3));
-			return 8;
-		});
+		auto result = connectAsync.wait_for(std::chrono::milliseconds(timeout));
+
+		if (result != std::future_status::ready)
+		{
+			closesocket(handle);
+			handle = socket(AF_INET, SOCK_STREAM, NULL);
+			id = (long long)handle;
+			WSASetLastError(10060);
+			throw FormatError("connect() in Client::Connect()");
+		}
+		else if (connectAsync.get() != 0)
+		{
+			closesocket(handle);
+			handle = socket(AF_INET, SOCK_STREAM, NULL);
+			id = (long long)handle;
+			WSASetLastError(10060);
+			throw FormatError("connect() in Client::Connect()");
+		}
 
 		connected = true;
 		receiveThread = thread(ReceiveThread, this);

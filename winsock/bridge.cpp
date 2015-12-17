@@ -94,9 +94,9 @@ namespace winsock
 		client = std::shared_ptr<IntClient>(c);
 	}
 
-	void Client::Connect()
+	void Client::Connect(size_t timeout)
 	{
-		client->Connect();
+		client->Connect(timeout);
 	}
 
 	void Client::Disconnect()

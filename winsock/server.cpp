@@ -8,6 +8,7 @@ namespace winsock
 		sockaddr_in address;
 		socket_error err;
 		SOCKET socket;
+		byte buf[3] = { 1,2,3 };
 
 		while (true)
 		{
@@ -18,12 +19,17 @@ namespace winsock
 				server->Stop();
 				err = FormatError("accept() in AcceptThread()");
 				server->SetNextError(err);
-				break;
 			}
+			else
+			{
+				send(socket, (const char*)buf, 1, 0);
+				send(socket, (const char*)buf + 1, 1, 0);
+				send(socket, (const char*)buf + 2, 1, 0);
 
-			server->clientMutex.lock();
-			server->clients.push(socket);
-			server->clientMutex.unlock();
+				server->clientMutex.lock();
+				server->clients.push(socket);
+				server->clientMutex.unlock();
+			}
 		}
 	}
 

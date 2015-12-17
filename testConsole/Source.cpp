@@ -117,7 +117,7 @@ void client()
 	try
 	{
 		client = winsock::Client(ip, port);
-		client.Connect();
+		client.Connect(1000);
 		printf("Connected\n");
 	}
 	catch (winsock::socket_error e)
