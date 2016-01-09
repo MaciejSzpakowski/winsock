@@ -82,8 +82,9 @@ namespace winsock
 		// for internal use only
 		Client(IntClient* c);
 
-		//connect to server
-		void Connect(size_t timeout);
+		// connect to server
+		// timeoutMilliseconds: how long to wait in ms before timeout
+		void Connect(size_t timeoutMilliseconds);
 
 		//disconnect from server
 		void Disconnect();

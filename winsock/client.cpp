@@ -93,11 +93,11 @@ namespace winsock
 		return 0;
 	}
 
-	void IntClient::Connect(size_t timeout)
+	void IntClient::Connect(size_t timeoutMilliseconds)
 	{
 		auto connectAsync = std::async(std::launch::async, ConnectThread, this);
 
-		auto result = connectAsync.wait_for(std::chrono::milliseconds(timeout));
+		auto result = connectAsync.wait_for(std::chrono::milliseconds(timeoutMilliseconds));
 
 		if (result != std::future_status::ready)
 		{
