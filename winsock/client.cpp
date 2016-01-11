@@ -13,14 +13,13 @@ namespace winsock
 
 			if (len == SOCKET_ERROR)
 			{
+				client->Disconnect();
 				err = FormatError("accept() in AcceptThread()");
-				client->Disconnect();				
 				client->SetNextError(err);
 				break;
 			}
 			else if (len == 0)
 			{
-				client->Disconnect();
 				break;
 			}
 
@@ -29,10 +28,13 @@ namespace winsock
 				client->receiveBuffer.push_back(tempBuffer[i]);
 			client->receiveMutex.unlock();
 		}
+
+		client->receiveThreadIsRunning = false;
 	}
 
 	IntClient::IntClient(string ip, unsigned short port)
 	{
+		receiveThreadIsRunning = false;
 		name = "";
 		connected = false;
 		server = nullptr;
@@ -63,6 +65,7 @@ namespace winsock
 		connected = true;
 		handle = socket;
 		address = _address;
+		receiveThreadIsRunning = true;
 		receiveThread = thread(ReceiveThread, this);
 		receiveThread.detach();
 		id = (long long)handle;
@@ -95,6 +98,9 @@ namespace winsock
 
 	void IntClient::Connect(size_t timeoutMilliseconds)
 	{
+		if(connected || receiveThreadIsRunning)
+			throw socket_error("Client is running or its receiving thread is still running",0);
+
 		auto connectAsync = std::async(std::launch::async, ConnectThread, this);
 
 		auto result = connectAsync.wait_for(std::chrono::milliseconds(timeoutMilliseconds));
@@ -117,6 +123,7 @@ namespace winsock
 		}
 
 		connected = true;
+		receiveThreadIsRunning = true;
 		receiveThread = thread(ReceiveThread, this);
 		receiveThread.detach();
 	}
@@ -184,8 +191,12 @@ namespace winsock
 		}
 	}
 
-	void IntClient::Destroy()
+	IntClient::~IntClient()
 	{
 		Disconnect();
+		while (receiveThreadIsRunning)
+		{
+			Sleep(1);
+		}
 	}
 }

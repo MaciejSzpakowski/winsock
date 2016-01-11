@@ -19,6 +19,7 @@ namespace winsock
 				server->Stop();
 				err = FormatError("accept() in AcceptThread()");
 				server->SetNextError(err);
+				break;
 			}
 			else
 			{
@@ -31,10 +32,13 @@ namespace winsock
 				server->clientMutex.unlock();
 			}
 		}
+
+		server->acceptThreadIsRunning = false;
 	}
 
 	IntServer::IntServer(unsigned short port)
 	{
+		acceptThreadIsRunning = false;
 		running = false;
 		name = "";
 		SecureZeroMemory(&address, sizeof(address));
@@ -66,12 +70,16 @@ namespace winsock
 
 	void IntServer::Start(int maxQueue)
 	{
+		if (running || acceptThreadIsRunning)
+			throw socket_error("Server is running or its accepting thread is still running",0);
+
 		if (listen(handle, maxQueue) == SOCKET_ERROR)
 		{
 			throw FormatError("listen() in IntServer::Start()");
 		}
 
 		running = true;
+		acceptThreadIsRunning = true;
 		acceptThread = thread(AcceptThread, this);
 		acceptThread.detach();
 	}
@@ -110,8 +118,12 @@ namespace winsock
 		return new IntClient(socket, address, this);
 	}
 
-	void IntServer::Destroy()
+	IntServer::~IntServer()
 	{
 		Stop();
+		while (acceptThreadIsRunning)
+		{
+			Sleep(1);
+		}		
 	}
 }

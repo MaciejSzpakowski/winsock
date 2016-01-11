@@ -24,7 +24,7 @@ namespace winsock
 	using std::mutex;
 	using std::stringstream;
 
-	string GetLastWinsockErrorMessage(PDWORD errorCode);
+	string GetLastWinsockErrorMessage(DWORD errorCode);
 	socket_error FormatError(const char* header);
 
 	struct BaseSocket
@@ -51,6 +51,7 @@ namespace winsock
 		thread receiveThread;
 		mutex receiveMutex;
 		bool connected;
+		bool receiveThreadIsRunning;
 
 		//constructor for actual client program
 		IntClient(string ip, unsigned short port);
@@ -74,12 +75,13 @@ namespace winsock
 		//len: length in bytes
 		void Send(byte* msg, byte len);
 
-		void Destroy();
+		~IntClient();
 	};
 
 	struct IntServer : public BaseSocket
 	{
-		thread acceptThread;		
+		bool acceptThreadIsRunning;
+		thread acceptThread;
 		mutex clientMutex;
 		std::queue<SOCKET> clients;
 		
@@ -97,6 +99,6 @@ namespace winsock
 
 		IntClient* GetNextClient();
 
-		void Destroy();
+		~IntServer();
 	};
 }

@@ -9,6 +9,8 @@
 #pragma comment(lib, "../x64/Release/winsock.lib")
 #endif
 
+#include <Windows.h>
+
 void server()
 {
 	std::string in;
@@ -42,6 +44,9 @@ void server()
 	while (true)
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+		if (GetAsyncKeyState('Q'))
+			break;
 
 		try
 		{
@@ -189,5 +194,6 @@ int main()
 	else if(in == "2")
 		client();
 
+	printf("End\n");
 	return 0;
 }
